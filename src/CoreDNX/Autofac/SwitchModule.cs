@@ -33,7 +33,7 @@ namespace CoreDNX.Autofac
 
             builder.RegisterType<CollectionIntercept>().AsSelf();
             builder.RegisterType<SwitchIntercept>().AsSelf();
-            builder.RegisterType<DefaultFeatureProvider>().As<IFeatureProvider>();
+            builder.RegisterType<DefaultFeatureProvider>().As<IFeatureProvider>().SingleInstance();
             builder.RegisterType<FeatureService>().As<IFeatureService>();
             builder.RegisterType<SwitchBus>().As<ISwitchBus>();
 

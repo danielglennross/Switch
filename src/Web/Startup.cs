@@ -2,6 +2,7 @@
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using CoreDNX.Autofac;
+using CoreDNX.Providers;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -48,6 +49,10 @@ namespace Web
             builder.RegisterModule(new SwitchModule());
 
             var container = builder.Build();
+
+            var featureProvider = container.Resolve<IFeatureProvider>();
+            featureProvider.EnableFeature("test1feature");
+
             return container.Resolve<IServiceProvider>();
         }
 

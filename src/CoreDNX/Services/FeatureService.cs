@@ -19,6 +19,9 @@ namespace CoreDNX.Services
 
         IFeature GetConcreteForInterface(IEnumerable<IFeature> concreteTypes);
         IEnumerable<IFeature> FilterEnabledFeatures(IEnumerable<IFeature> concreteTypes);
+
+        void EnableFeature(string name);
+        void DisableFeature(string name);
     }
 
     public class FeatureService : IFeatureService
@@ -122,6 +125,16 @@ namespace CoreDNX.Services
             });
 
             return tt;
+        }
+
+        public void EnableFeature(string name)
+        {
+            _featureProvider.EnableFeature(name);
+        }
+
+        public void DisableFeature(string name)
+        {
+            _featureProvider.DisableFeature(name);
         }
     }
 }

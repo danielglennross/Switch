@@ -1,3 +1,17 @@
 ﻿Welcome
 
 @ViewBag.Value
+
+@using (Html.BeginForm("Enable", "Home", null, FormMethod.Post))
+{
+    <label>enable feature</label>
+    <input type="text" name="name"/>
+    <input type="submit" value="Submit">
+}
+
+@using (Html.BeginForm("Disable", "Home", null, FormMethod.Post))
+{
+    <label>disable feature</label>
+    <input type="text" name="name" />
+    <input type="submit" value="Submit">
+}

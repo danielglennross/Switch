@@ -19,18 +19,25 @@ namespace CoreDNX.Providers
 
     public class DefaultFeatureProvider : IFeatureProvider
     {
+        private readonly IList<string> _enabledFeatures;
+
+        public DefaultFeatureProvider()
+        {
+            _enabledFeatures = new List<string>();
+        }
+
         public IEnumerable<Type> GetEnabledSwitches => new[] {typeof (Test1), typeof (Test2), typeof (Test3)};
 
-        public IEnumerable<string> GetEnabledFeatures => new[] {"test1feature", "test2feature", "test3feature"};
+        public IEnumerable<string> GetEnabledFeatures => _enabledFeatures;
 
         public void DisableFeature(string feature)
         {
-            throw new NotImplementedException();
+            _enabledFeatures.Remove(feature);
         }
 
         public void EnableFeature(string feature)
         {
-            throw new NotImplementedException();
+            _enabledFeatures.Add(feature);
         }
     }
 }
