@@ -1,0 +1,28 @@
+{
+  "version": "1.0.0-*",
+  "description": "CoreDNX Class Library",
+  "authors": [ "Daniel" ],
+  "tags": [ "" ],
+  "projectUrl": "",
+  "licenseUrl": "",
+  "frameworks": {
+    "dnx451": {
+    },
+    "dnx50": {
+      "dependencies": {
+        "Microsoft.CSharp": "4.0.1-beta-23516",
+        "System.Collections": "4.0.11-beta-23516",
+        "System.Linq": "4.0.1-beta-23516",
+        "System.Runtime": "4.0.21-beta-23516",
+        "System.Threading": "4.0.11-beta-23516",
+      }
+    }
+  },
+  "dependencies": {
+    "Autofac": "4.0.0-rc1-177",
+    "Autofac.Extensions.DependencyInjection": "4.0.0-rc1-177",
+    "Autofac.Extras.DynamicProxy": "4.0.0-beta8-231",
+    "Castle.Core": "4.0.0-alpha001",
+    "NUnit": "3.2.0"
+  }
+}

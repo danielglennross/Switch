@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Core.Attributes;
-using Core.Autofac;
-using Core.Models;
+using CoreDNX.Attributes;
+using CoreDNX.Autofac;
+using CoreDNX.Models;
 
-namespace Core.Providers
+namespace CoreDNX.Providers
 {
-    public interface IFeatureProvider : IFeature
+    public interface IFeatureProvider
     {
         IEnumerable<Type> GetEnabledSwitches { get; }
         IEnumerable<string> GetEnabledFeatures { get; }
@@ -17,7 +17,7 @@ namespace Core.Providers
         void DisableFeature(string feature);
     }
 
-    public class DefaultFeatureProvider
+    public class DefaultFeatureProvider : IFeatureProvider
     {
         public IEnumerable<Type> GetEnabledSwitches => new[] {typeof (Test1), typeof (Test2), typeof (Test3)};
 

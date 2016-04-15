@@ -11,11 +11,11 @@ using System.Threading.Tasks;
 using Autofac;
 using Autofac.Features.Indexed;
 using Castle.DynamicProxy;
-using Core.Autofac;
-using Core.Models;
-using Core.Services;
+using CoreDNX.Autofac;
+using CoreDNX.Models;
+using CoreDNX.Services;
 
-namespace Core.Interceptors
+namespace CoreDNX.Interceptors
 {
     public class SwitchIntercept : IInterceptor
     {

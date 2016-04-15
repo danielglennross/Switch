@@ -4,13 +4,13 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using Core.Attributes;
-using Core.Autofac;
-using Core.FeatureRules;
-using Core.Models;
-using Core.Providers;
+using CoreDNX.Attributes;
+using CoreDNX.Autofac;
+using CoreDNX.FeatureRules;
+using CoreDNX.Models;
+using CoreDNX.Providers;
 
-namespace Core.Services
+namespace CoreDNX.Services
 {
     public interface IFeatureService
     {

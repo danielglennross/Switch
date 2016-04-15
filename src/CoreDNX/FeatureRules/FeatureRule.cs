@@ -5,7 +5,7 @@ using System.Net.Configuration;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Core.FeatureRules
+namespace CoreDNX.FeatureRules
 {
     public interface IRule
     {

@@ -7,10 +7,10 @@ using System.Text;
 using System.Threading.Tasks;
 using Autofac.Features.Indexed;
 using Castle.DynamicProxy;
-using Core.Helpers;
-using Core.Models;
+using CoreDNX.Helpers;
+using CoreDNX.Models;
 
-namespace Core.Services
+namespace CoreDNX.Services
 {
     public interface ISwitchBus
     {

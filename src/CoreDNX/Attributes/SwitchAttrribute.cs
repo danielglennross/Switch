@@ -1,16 +1,16 @@
 ﻿using System;
-using Core.FeatureRules;
+using CoreDNX.FeatureRules;
 
-namespace Core.Attributes
+namespace CoreDNX.Attributes
 {
     [AttributeUsage(AttributeTargets.Class)]
-    class FeatureAttrribute : Attribute
+    class SwitchAttrribute : Attribute
     {
         public int Priority { get; }
         public Type Rule { get; }
         public string Group { get; }
 
-        public FeatureAttrribute(int priority, Type ruleType = null, string group = null)
+        public SwitchAttrribute(int priority, Type ruleType = null, string group = null)
         {
             ruleType = ruleType ?? typeof (Always);
             if (!typeof (IRule).IsAssignableFrom(ruleType))

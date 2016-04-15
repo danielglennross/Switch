@@ -1,4 +1,4 @@
-﻿namespace Core.Models
+﻿namespace CoreDNX.Models
 {
     public interface ISwitch { }
 

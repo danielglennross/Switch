@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -9,19 +10,20 @@ using Autofac;
 using Autofac.Builder;
 using Autofac.Core;
 using Autofac.Core.Activators.Reflection;
-using Autofac.Extras.DynamicProxy2;
+using Autofac.Extras.DynamicProxy;
 using Autofac.Features.Indexed;
 using Autofac.Features.Scanning;
 using Castle.DynamicProxy;
-using Core.Attributes;
-using Core.FeatureRules;
-using Core.Interceptors;
-using Core.Models;
-using Core.Providers;
-using Core.Services;
+using Castle.DynamicProxy.Internal;
+using CoreDNX.Attributes;
+using CoreDNX.FeatureRules;
+using CoreDNX.Interceptors;
+using CoreDNX.Models;
+using CoreDNX.Providers;
+using CoreDNX.Services;
 using Module = Autofac.Module;
 
-namespace Core.Autofac
+namespace CoreDNX.Autofac
 {
     public class SwitchModule : Module
     {
