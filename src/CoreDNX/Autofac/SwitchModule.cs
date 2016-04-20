@@ -21,6 +21,7 @@ using CoreDNX.Interceptors;
 using CoreDNX.Models;
 using CoreDNX.Providers;
 using CoreDNX.Services;
+using CoreDNX.Startup;
 using Module = Autofac.Module;
 
 namespace CoreDNX.Autofac
@@ -33,8 +34,14 @@ namespace CoreDNX.Autofac
 
             builder.RegisterType<CollectionIntercept>().AsSelf();
             builder.RegisterType<SwitchIntercept>().AsSelf();
+
+            //test
+            builder.RegisterType<TestFeatureManifest>().As<IFeatureManifest>();
+
+            builder.RegisterType<FeatureManager>().As<IFeatureManager>().SingleInstance();
             builder.RegisterType<DefaultFeatureProvider>().As<IFeatureProvider>().SingleInstance();
-            builder.RegisterType<FeatureService>().As<IFeatureService>();
+
+            builder.RegisterType<FeatureActionService>().As<IFeatureActionService>();
             builder.RegisterType<SwitchBus>().As<ISwitchBus>();
 
             builder.Register<Func<Type, IRule>>(c => {

@@ -8,6 +8,7 @@ using Microsoft.AspNet.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Web.Middleware;
 
 namespace Web
 {
@@ -79,6 +80,8 @@ namespace Web
             app.UseApplicationInsightsExceptionTelemetry();
 
             app.UseStaticFiles();
+
+            app.UseFeatureMiddleware();
 
             // To configure external authentication please see http://go.microsoft.com/fwlink/?LinkID=532715
 

@@ -20,9 +20,9 @@ namespace CoreDNX.Services
     public class SwitchBus : ISwitchBus // swap ISwitxh w/ IFeature
     {
         private readonly IIndex<string, IEnumerable<IFeature>> _features;
-        private readonly IFeatureService _featureService;
+        private readonly IFeatureActionService _featureService;
 
-        public SwitchBus(IIndex<string, IEnumerable<IFeature>> features, IFeatureService featureService)
+        public SwitchBus(IIndex<string, IEnumerable<IFeature>> features, IFeatureActionService featureService)
         {
             _featureService = featureService;
             _features = features;

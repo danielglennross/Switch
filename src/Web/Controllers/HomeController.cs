@@ -7,9 +7,9 @@ namespace Web.Controllers
     public class HomeController : Controller
     {
         private readonly ITestFeature _testFeature;
-        private readonly IFeatureService _featureService;
+        private readonly IFeatureActionService _featureService;
 
-        public HomeController(ITestFeature testFeature, IFeatureService featureService)
+        public HomeController(ITestFeature testFeature, IFeatureActionService featureService)
         {
             _featureService = featureService;
             _testFeature = testFeature;

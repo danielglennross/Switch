@@ -9,10 +9,11 @@ using CoreDNX.Autofac;
 using CoreDNX.FeatureRules;
 using CoreDNX.Models;
 using CoreDNX.Providers;
+using CoreDNX.Startup;
 
 namespace CoreDNX.Services
 {
-    public interface IFeatureService
+    public interface IFeatureActionService
     {
         ISwitch GetConcreteForInterface(IEnumerable<ISwitch> concreteTypes);
         IEnumerable<ISwitch> FilterEnabledFeatures(IEnumerable<ISwitch> concreteTypes);
@@ -24,13 +25,41 @@ namespace CoreDNX.Services
         void DisableFeature(string name);
     }
 
-    public class FeatureService : IFeatureService
+    public interface IFeatureInfoService
+    {
+        IEnumerable<FeatureItem> GetFeaturesItems();
+    }
+
+    public class FeatureInfoService : IFeatureInfoService
+    {
+        private readonly IFeatureProvider _featureProvider;
+        private readonly IFeatureManager _featureManager;
+
+        public FeatureInfoService(IFeatureProvider featureProvider, IFeatureManager featureManager)
+        {
+            _featureManager = featureManager;
+            _featureProvider = featureProvider;
+        }
+
+        public IEnumerable<FeatureItem> GetFeaturesItems()
+        {
+            return _featureManager.FeatureDescriptors.Select(x => new FeatureItem
+            {
+                FeatureDescriptor = x,
+                FeatureState = _featureProvider.GetEnabledFeatures.Contains(x.Name) ? FeatureState.Enabled : FeatureState.Disabled
+            });
+        }
+    }
+
+    public class FeatureActionService : IFeatureActionService
     {
         private readonly Func<Type, IRule> _ruleFactory;
         private readonly IFeatureProvider _featureProvider;
+        private readonly IFeatureManager _featureManager;
 
-        public FeatureService(Func<Type, IRule> ruleFactory, IFeatureProvider featureProvider)
+        public FeatureActionService(Func<Type, IRule> ruleFactory, IFeatureProvider featureProvider, IFeatureManager featureManager)
         {
+            _featureManager = featureManager;
             _ruleFactory = ruleFactory;
             _featureProvider = featureProvider;
         }
@@ -129,7 +158,18 @@ namespace CoreDNX.Services
 
         public void EnableFeature(string name)
         {
-            _featureProvider.EnableFeature(name);
+            var featureDesc =
+                _featureManager.FeatureDescriptors.FirstOrDefault(
+                    x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+
+            var featuresToEnable =
+                featureDesc.Dependencies.Concat(new[] {featureDesc.Name})
+                    .Where(x => !_featureProvider.GetEnabledFeatures.Contains(x));
+
+            foreach (var feature in featuresToEnable)
+            {
+                _featureProvider.EnableFeature(feature);
+            }
         }
 
         public void DisableFeature(string name)

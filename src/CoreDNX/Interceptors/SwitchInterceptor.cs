@@ -43,9 +43,9 @@ namespace CoreDNX.Interceptors
 
     public class CollectionIntercept : IInterceptor
     {
-        private readonly IFeatureService _featureService;
+        private readonly IFeatureActionService _featureService;
 
-        public CollectionIntercept(IFeatureService featureService) // swap ISwitch w/ IFeature
+        public CollectionIntercept(IFeatureActionService featureService) // swap ISwitch w/ IFeature
         {
             _featureService = featureService;
         }
