@@ -34,24 +34,25 @@ namespace Web.Middleware
             _featureService = featureService;
         }
 
-        public Task Dispatch(RequestDispatchContext requestDispatchContext)
+        public async Task Dispatch(RequestDispatchContext requestDispatchContext)
         {
             var req = requestDispatchContext.HttpContext.Request;
             var res = requestDispatchContext.HttpContext.Response;
             if (req.Method != "POST")
             {
                 res.StatusCode = 405;
-                return Task.FromResult(false);
+                return;
             }
 
             var featuresToEnable = req.Form["enableFeatures"] as IEnumerable<string>;
             var featuresToDisable = req.Form["disableFeatures"] as IEnumerable<string>;
 
-            featuresToEnable.ToList().ForEach(_featureService.EnableFeature);
-            featuresToDisable.ToList().ForEach(_featureService.DisableFeature);
+            featuresToEnable.ToList().ForEach(
+                async x => await _featureService.EnableFeature(x).ConfigureAwait(false));
+            featuresToDisable.ToList().ForEach(
+                async x => await _featureService.DisableFeature(x).ConfigureAwait(false));
 
             res.StatusCode = (int)HttpStatusCode.NoContent;
-            return Task.FromResult(true);
         }
     }
 
@@ -68,7 +69,7 @@ namespace Web.Middleware
         {
             var req = requestDispatchContext.HttpContext.Request;
             var res = requestDispatchContext.HttpContext.Response;
-            if (req.Method != "POST")
+            if (req.Method != "GET")
             {
                 res.StatusCode = 405;
                 return;
@@ -105,7 +106,7 @@ namespace Web.Middleware
                 return;
             }
 
-            var indexPage = Path.Combine(_appEnvironment.ApplicationBasePath, "ISwitch", "Index.html");
+            var indexPage = Path.Combine(_appEnvironment.ApplicationBasePath, "Views", "ISwitch", "Index.cshtml");
             using (var reader = new StreamReader(indexPage))
             {
                 var output = await reader.ReadToEndAsync();
@@ -131,7 +132,8 @@ namespace Web.Middleware
         public async Task Invoke(HttpContext context)
         {
             var requestDispatchContext = new RequestDispatchContext {HttpContext = context};
-            var key = requestDispatchContext.HttpContext.Request.Path;
+            var key = requestDispatchContext.HttpContext.Request.Path.Value ?? "";
+            if (key == "") key = "/";
 
             var dispatcher = _requestDispatchIndex[key];
             if (dispatcher == null)

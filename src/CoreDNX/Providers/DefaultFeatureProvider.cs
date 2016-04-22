@@ -1,22 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using CoreDNX.Attributes;
-using CoreDNX.Autofac;
-using CoreDNX.Models;
 
 namespace CoreDNX.Providers
 {
-    public interface IFeatureProvider
-    {
-        IEnumerable<Type> GetEnabledSwitches { get; }
-        IEnumerable<string> GetEnabledFeatures { get; }
-        void EnableFeature(string feature);
-        void DisableFeature(string feature);
-    }
-
     public class DefaultFeatureProvider : IFeatureProvider
     {
         private readonly IList<string> _enabledFeatures;
@@ -26,18 +12,18 @@ namespace CoreDNX.Providers
             _enabledFeatures = new List<string>();
         }
 
-        public IEnumerable<Type> GetEnabledSwitches => new[] {typeof (Test1), typeof (Test2), typeof (Test3)};
+        public Task<IEnumerable<string>> GetEnabledFeatures() => Task.FromResult(_enabledFeatures as IEnumerable<string>);
 
-        public IEnumerable<string> GetEnabledFeatures => _enabledFeatures;
-
-        public void DisableFeature(string feature)
+        public Task DisableFeature(string feature)
         {
             _enabledFeatures.Remove(feature);
+            return Task.FromResult(0);
         }
 
-        public void EnableFeature(string feature)
+        public Task EnableFeature(string feature)
         {
             _enabledFeatures.Add(feature);
+            return Task.FromResult(0);
         }
     }
 }

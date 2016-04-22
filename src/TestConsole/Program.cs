@@ -1,21 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using Autofac;
 using CoreDNX.Autofac;
-using CoreDNX.Services;
-using NUnit.Framework;
 using static CoreDNX.TestFeatures;
 
-namespace CoreDNX.Tests
+namespace TestConsole
 {
-    [TestFixture]
-    public class SwitchTests
+    public class Program
     {
-        [Test]
-        public void Test()
+        public static void Main(string[] args)
         {
             var builder = new ContainerBuilder();
             builder.RegisterModule(new SwitchModule());

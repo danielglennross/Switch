@@ -23,6 +23,6 @@
     "Autofac.Extensions.DependencyInjection": "4.0.0-rc1-177",
     "Autofac.Extras.DynamicProxy": "4.0.0-beta8-231",
     "Castle.Core": "4.0.0-alpha001",
-    "NUnit": "3.2.0"
+    "NUnit": "3.2.1"
   }
 }

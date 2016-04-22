@@ -47,6 +47,11 @@ namespace Web
             var builder = new ContainerBuilder();
             builder.Populate(services);
 
+            builder.RegisterType<RequestDispatcherService>().As<IRequestDispatcherService>();
+            builder.RegisterType<FeatureActionDispatcher>().Keyed<IRequestDispatcher>("/act");
+            builder.RegisterType<FeatureDescriptorDispatcher>().Keyed<IRequestDispatcher>("/info");
+            builder.RegisterType<RazorPageDispatcher>().Keyed<IRequestDispatcher>("/");
+
             builder.RegisterModule(new SwitchModule());
 
             var container = builder.Build();

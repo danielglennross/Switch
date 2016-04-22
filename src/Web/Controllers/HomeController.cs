@@ -1,4 +1,5 @@
-﻿using CoreDNX.Autofac;
+﻿using CoreDNX;
+using CoreDNX.Autofac;
 using CoreDNX.Services;
 using Microsoft.AspNet.Mvc;
 
@@ -6,10 +7,10 @@ namespace Web.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ITestFeature _testFeature;
+        private readonly TestFeatures.ITestFeature _testFeature;
         private readonly IFeatureActionService _featureService;
 
-        public HomeController(ITestFeature testFeature, IFeatureActionService featureService)
+        public HomeController(TestFeatures.ITestFeature testFeature, IFeatureActionService featureService)
         {
             _featureService = featureService;
             _testFeature = testFeature;

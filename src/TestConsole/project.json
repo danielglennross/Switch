@@ -1,0 +1,29 @@
+{
+  "version": "1.0.0-*",
+  "description": "TestConsole Console Application",
+  "authors": [ "Daniel" ],
+  "tags": [ "" ],
+  "projectUrl": "",
+  "licenseUrl": "",
+
+  "compilationOptions": {
+    "emitEntryPoint": true
+  },
+
+  "dependencies": {
+    "Autofac": "4.0.0-beta8",
+    "Autofac.Extensions.DependencyInjection": "4.0.0-rc1-177"
+  },
+
+  "commands": {
+    "TestConsole": "TestConsole"
+  },
+
+  "frameworks": {
+    "dnx451": {
+      "dependencies": {
+        "CoreDNX": "1.0.0-*"
+      }
+    }
+  }
+}

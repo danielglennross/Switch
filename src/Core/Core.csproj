@@ -59,20 +59,32 @@
   <ItemGroup>
     <Compile Include="Attributes\FeatureAttribute.cs" />
     <Compile Include="Attributes\SuppressTypeAttribute.cs" />
-    <Compile Include="Attributes\SwitchAttrribute.cs" />
     <Compile Include="Autofac\SwitchModule.cs" />
     <Compile Include="FeatureRules\FeatureRule.cs" />
-    <Compile Include="Helpers\DelegateHelper.cs" />
+    <Compile Include="FeatureRules\IRule.cs" />
+    <Compile Include="Providers\DefaultFeatureProvider.cs" />
+    <Compile Include="Providers\IFeatureProvider.cs" />
+    <Compile Include="Services\FeatureActionService.cs" />
+    <Compile Include="Services\FeatureInfoService.cs" />
+    <Compile Include="Services\IFeatureActionService.cs" />
+    <Compile Include="Services\IFeatureInfoService.cs" />
+    <Compile Include="Services\ISwitchBus.cs" />
+    <Compile Include="Services\SwitchBus.cs" />
+    <Compile Include="Startup\FeatureBuilder.cs" />
+    <Compile Include="Startup\FeatureManager.cs" />
+    <Compile Include="Startup\IFeatureManifest.cs" />
+    <Compile Include="TestFeatureManifest.cs" />
+    <Compile Include="TestFeatures.cs" />
+    <Compile Include="Interceptors\EnumerableInterceptor.cs" />
     <Compile Include="Interceptors\SwitchInterceptor.cs" />
     <Compile Include="Models\IFeature.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Providers\DefaultFeatureProvider.cs" />
-    <Compile Include="Services\FeatureService.cs" />
-    <Compile Include="Services\SwitchBus.cs" />
-    <Compile Include="Startup\FeatureSetup.cs" />
     <Compile Include="Tests\SwitchTests.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Helpers\" />
+    <Folder Include="Middleware\" />
+  </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace CoreDNX.Startup
+namespace Core.Startup
 {
     public class FeatureBuilder
     {

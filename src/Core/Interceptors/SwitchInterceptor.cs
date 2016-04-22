@@ -1,32 +1,41 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Threading.Tasks;
-using Autofac;
-using Autofac.Features.Indexed;
 using Castle.DynamicProxy;
-using Core.Autofac;
-using Core.Models;
 using Core.Services;
 
 namespace Core.Interceptors
 {
-    public class SwitchIntercept : IInterceptor
+    public class SwitchInterceptor : IInterceptor
     {
+        private class TaskCompletionSourceMethodMarkerAttribute : Attribute { }
+
+        private static readonly MethodInfo TaskCompletionSourceMethod = typeof(SwitchInterceptor)
+            .GetMethods(BindingFlags.NonPublic | BindingFlags.Instance)
+            .Single(x => x.GetCustomAttributes(typeof(TaskCompletionSourceMethodMarkerAttribute)).Any());
+
         private readonly ISwitchBus _switchBus;
 
-        public SwitchIntercept(ISwitchBus switchBus)
+        public SwitchInterceptor(ISwitchBus switchBus)
         {
             _switchBus = switchBus;
         }
 
         public void Intercept(IInvocation invocation)
+        {
+            if (!typeof(Task).IsAssignableFrom(invocation.Method.ReturnType))
+            {
+                invocation.ReturnValue = DoWork(invocation).GetAwaiter().GetResult();
+                return;
+            }
+
+            var returnType = invocation.Method.ReturnType.IsGenericType ? invocation.Method.ReturnType.GetGenericArguments()[0] : typeof(object);
+            var method = TaskCompletionSourceMethod.MakeGenericMethod(returnType);
+            invocation.ReturnValue = method.Invoke(this, new object[] { invocation });
+        }
+
+        public Task<dynamic> DoWork(IInvocation invocation)
         {
             var interfaceName = invocation.Method.DeclaringType.Name;
             var methodName = invocation.Method.Name;
@@ -35,47 +44,104 @@ namespace Core.Interceptors
                 .Select((parameter, index) => new { parameter.Name, Value = invocation.Arguments[index] })
                 .ToDictionary(kv => kv.Name, kv => kv.Value);
 
-            var result = _switchBus.Notify(interfaceName + "." + methodName, data);
+            return _switchBus.Notify<dynamic>(interfaceName + "." + methodName, data);
+        }
 
-            invocation.ReturnValue = result;
+        [TaskCompletionSourceMethodMarker]
+        private Task<TResult> TaskCompletionSource<TResult>(IInvocation invocation)
+        {
+            var tcs = new TaskCompletionSource<TResult>();
+
+            var task2 = (Task) DoWork(invocation);
+
+            var tcs2 = new TaskCompletionSource<object>();
+            task2.ContinueWith(x =>
+            {
+                if (x.IsFaulted)
+                {
+                    tcs2.SetException(x.Exception);
+                    return;
+                }
+
+                dynamic dynamicTask = ((dynamic)task2).Result;
+                object result = dynamicTask.Result;
+                tcs2.SetResult(result);
+            });
+
+            var task = tcs2.Task;
+            task.ContinueWith(x =>
+            {
+                if (x.IsFaulted)
+                {
+                    tcs.SetException(x.Exception);
+                    return;
+                }
+
+                tcs.SetResult((TResult)x.Result);
+            });
+
+            return tcs.Task;
         }
     }
 
-    public class CollectionIntercept : IInterceptor
-    {
-        private readonly IFeatureService _featureService;
+    //public class SwitchInterceptor : IInterceptor
+    //{
+    //    private readonly ISwitchBus _switchBus;
 
-        public CollectionIntercept(IFeatureService featureService) // swap ISwitch w/ IFeature
-        {
-            _featureService = featureService;
-        }
+    //    public SwitchInterceptor(ISwitchBus switchBus)
+    //    {
+    //        _switchBus = switchBus;
+    //    }
 
-        public void Intercept(IInvocation invocation)
-        {
-            var target = invocation.InvocationTarget;
-            var features = ((IEnumerable<IFeature>)target).Select(x => ((IProxyTargetAccessor)x).DynProxyGetTarget()).ToList();
+    //    public void Intercept(IInvocation invocation)
+    //    {
+    //        var interfaceName = invocation.Method.DeclaringType.Name;
+    //        var methodName = invocation.Method.Name;
 
-            var result = _featureService.FilterEnabledFeatures(features.Select(x => (IFeature)x));
+    //        var data = invocation.Method.GetParameters()
+    //            .Select((parameter, index) => new { parameter.Name, Value = invocation.Arguments[index] })
+    //            .ToDictionary(kv => kv.Name, kv => kv.Value);
 
-            var itemsToRemove = features.Except(result);
-            var idexesToSkip = itemsToRemove.Select(x => features.Select((value, index) => new { value, index }).Single(p => p.value == x).index).ToList();
+    //        if (!IsAsyncMethod(invocation.Method))
+    //        {
+    //            var result = 
+    //                _switchBus.Notify<dynamic>(interfaceName + "." + methodName, data)
+    //                    .GetAwaiter().GetResult();
+    //            invocation.ReturnValue = result;
+    //        }
+    //        else
+    //        {
+    //            var task = _switchBus.Notify<dynamic>(interfaceName + "." + methodName, data);
 
-            var count = ((dynamic)target).Count;
-            for (var i = 0; i < count; i++)
-            {
-                ((dynamic)target)[i] = (dynamic)features[i]; //dynamic needed here to infer the correct runtime type
-            }
+    //            //var test = invocation.Method.ReturnType.GetGenericArguments()[0];
+    //            //dynamic vv = (dynamic)Activator.CreateInstance(test);
 
-            for (var i = 0; i < count; i++)
-            {
-                if (!idexesToSkip.Contains(i)) continue;
-                ((dynamic)target).RemoveAt(i);
-                --i;
-                --count;
-                idexesToSkip = idexesToSkip.Select(j => --j).ToList();
-            }
+    //            //var tt = new TaskCompletionSource<dynamic>();
+    //            //tt.SetResult((dynamic)vv);
+    //            //var task4 = tt.Task;
 
-            invocation.Proceed();
-        }
-    }
+    //            //var task2 = new Task<dynamic>(() => (int)vv);
+    //            //var task3 = new Task<int>(() => (int)vv);
+
+    //            var d1 = typeof(Task<>);
+    //            Type[] typeArgs = { invocation.Method.ReturnType.GetGenericArguments()[0] };
+    //            var makeme = d1.MakeGenericType(typeArgs);
+    //            var o = (dynamic)Activator.CreateInstance(makeme, BindingFlags.CreateInstance);
+
+    //            invocation.ReturnValue = o;
+
+    //            task.ContinueWith(context =>
+    //            {
+    //                //invocation.ReturnValue = context.Result;
+    //            });
+    //        }
+    //    }
+
+    //    private static bool IsAsyncMethod(MethodInfo method)
+    //    {
+    //        return
+    //            method.ReturnType == typeof(Task) || 
+    //            (method.ReturnType.IsGenericType && method.ReturnType.GetGenericTypeDefinition() == typeof(Task<>));
+    //    }
+    //}
 }

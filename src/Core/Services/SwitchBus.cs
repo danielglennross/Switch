@@ -1,34 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 using Autofac.Features.Indexed;
 using Castle.DynamicProxy;
-using Core.Helpers;
 using Core.Models;
 
 namespace Core.Services
 {
-    public interface ISwitchBus
-    {
-        object Notify(string messageName, IDictionary<string, object> eventData);
-    }
-
     public class SwitchBus : ISwitchBus // swap ISwitxh w/ IFeature
     {
         private readonly IIndex<string, IEnumerable<IFeature>> _features;
-        private readonly IFeatureService _featureService;
+        private readonly IFeatureActionService _featureService;
 
-        public SwitchBus(IIndex<string, IEnumerable<IFeature>> features, IFeatureService featureService)
+        public SwitchBus(IIndex<string, IEnumerable<IFeature>> features, IFeatureActionService featureService)
         {
             _featureService = featureService;
             _features = features;
         }
 
-        public object Notify(string messageName, IDictionary<string, object> eventData)
+        public async Task<T> Notify<T>(string messageName, IDictionary<string, object> eventData)
         {
             var parameters = messageName.Split('.');
             if (parameters.Length != 2)
@@ -38,21 +30,37 @@ namespace Core.Services
             var interfaceName = parameters[0];
             var methodName = parameters[1];
 
-            var features = _features[interfaceName].Select(x => ((IProxyTargetAccessor)x).DynProxyGetTarget());
+            var features = _features[interfaceName]
+                .Select(x => ((IProxyTargetAccessor)x).DynProxyGetTarget())
+                .ToList();
 
             var interfaceType = features.First().GetType().GetInterface(interfaceName);
-            var crete = _featureService.GetConcreteForInterface(features.Select(x => (IFeature)x));
+            var crete = 
+                await _featureService.GetConcreteForInterface(features.Select(x => (IFeature)x))
+                    .ConfigureAwait(false);
 
             var method = GetMatchingMethod(interfaceType, methodName, eventData);
 
-            var result = method.Invoke(crete, method.GetParameters().Select(p => eventData[p.Name]).ToArray());
+            dynamic result = 
+                (dynamic)method.Invoke(crete, method.GetParameters().Select(p => eventData[p.Name]).ToArray());
 
-            //var delegateCrete = DelegateHelper.CreateDelegate<IFeature>(crete.GetType(), method);
+            // use the run time type to determine which overload to use
+            return Handle(result);
+        }
 
-            //var args = method.GetParameters().Select(p => eventData[p.Name]).ToArray();
+        private static async Task Handle(Task task)
+        {
+            await task.ConfigureAwait(false);
+        }
 
-            //var result = delegateCrete(crete as IFeature, args);
+        private static async Task<T> Handle<T>(Task<T> task)
+        {
+            await Handle((Task)task).ConfigureAwait(false);
+            return await task.ConfigureAwait(false);
+        }
 
+        private static T Handle<T>(T result)
+        {
             return result;
         }
 
