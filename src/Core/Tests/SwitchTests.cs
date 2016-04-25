@@ -31,14 +31,14 @@ namespace Core.Tests
 
                 var r = testFeature.Run();
 
-                //testFeature.Do();
+                testFeature.Do();
 
-                //var col = scope.Resolve<IEnumerable<ITestFeature>>();
+                var col = scope.Resolve<IEnumerable<ITestFeature>>();
 
-                //foreach (var feature in col)
-                //{
-                //    r = feature.Run();
-                //}
+                foreach (var feature in col)
+                {
+                    r = feature.Run();
+                }
 
                 var rTask = testFeature.RunAsync();
                 rTask.ContinueWith(x =>
@@ -46,11 +46,11 @@ namespace Core.Tests
                     var rr = x.Result;
                 });
 
-                //var dTask = testFeature.DoAsync();
-                //dTask.ContinueWith(x =>
-                //{
-                //    var rr = x.Status;
-                //});
+                var dTask = testFeature.DoAsync();
+                dTask.ContinueWith(x =>
+                {
+                    var rr = x.Status;
+                });
 
                 Thread.Sleep(Timeout.Infinite);
             }

@@ -22,9 +22,10 @@ namespace Core
             public int Run() => 1;
             public Task<int> RunAsync() => Task.FromResult(1);
             public void Do() => Console.WriteLine("1");
-            public Task DoAsync()
+            public /*async*/ Task DoAsync()
             {
                 Console.WriteLine("1");
+                //await Task.Delay(100);
                 return Task.FromResult(0);
             }
 
@@ -38,9 +39,10 @@ namespace Core
             public int Run() => 2;
             public Task<int> RunAsync() => Task.FromResult(2);
             public void Do() { Console.WriteLine("2"); }
-            public Task DoAsync()
+            public /*async*/ Task DoAsync()
             {
                 Console.WriteLine("2");
+                //await Task.Delay(100);
                 return Task.FromResult(0);
             }
 
@@ -54,9 +56,10 @@ namespace Core
             public int Run() => 3;
             public Task<int> RunAsync() => Task.FromResult(3);
             public void Do() { Console.WriteLine("3"); }
-            public Task DoAsync()
+            public /*async*/ Task DoAsync()
             {
                 Console.WriteLine("3");
+                //await Task.Delay(100);
                 return Task.FromResult(0);
             }
 

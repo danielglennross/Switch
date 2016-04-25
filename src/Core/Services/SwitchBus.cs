@@ -41,8 +41,7 @@ namespace Core.Services
 
             var method = GetMatchingMethod(interfaceType, methodName, eventData);
 
-            dynamic result = 
-                (dynamic)method.Invoke(crete, method.GetParameters().Select(p => eventData[p.Name]).ToArray());
+            dynamic result = method.Invoke(crete, method.GetParameters().Select(p => eventData[p.Name]).ToArray());
 
             // use the run time type to determine which overload to use
             return Handle(result);
@@ -55,7 +54,7 @@ namespace Core.Services
 
         private static async Task<T> Handle<T>(Task<T> task)
         {
-            await Handle((Task)task).ConfigureAwait(false);
+            //await Handle((Task)task).ConfigureAwait(false);
             return await task.ConfigureAwait(false);
         }
 

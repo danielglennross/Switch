@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Castle.DynamicProxy;
 using Core.Models;
 using Core.Services;
@@ -15,6 +16,32 @@ namespace Core.Interceptors
             _featureService = featureService;
         }
 
+        //public void Intercept(IInvocation invocation)
+        //{
+        //    var returnType = invocation.Method.ReturnType.GetGenericArguments()[0];
+        //    var method = GetType().GetMethod("Get", BindingFlags.Instance | BindingFlags.NonPublic).MakeGenericMethod(returnType);
+
+        //    var target = method.Invoke(this, new object[] { invocation });
+
+        //    invocation.ReturnValue = target;
+        //    invocation.Proceed();
+        //}
+
+        //private IEnumerable<T> Get<T>(IInvocation invocation)
+        //{
+        //    var target = invocation.InvocationTarget;
+        //    var features = ((IEnumerable<T>)target)
+        //        .Select(x => (T)((IProxyTargetAccessor)x).DynProxyGetTarget())
+        //        .ToList();
+
+        //    var result =
+        //        _featureService.FilterEnabledFeatures(features.Select(x => (IFeature)x))
+        //            .GetAwaiter().GetResult();
+
+        //    var items = features.Intersect(result.Select(x => (T)x));
+        //    return items;
+        //} 
+
         public void Intercept(IInvocation invocation)
         {
             var target = invocation.InvocationTarget;
@@ -22,7 +49,7 @@ namespace Core.Interceptors
                 .Select(x => ((IProxyTargetAccessor)x).DynProxyGetTarget())
                 .ToList();
 
-            var result = 
+            var result =
                 _featureService.FilterEnabledFeatures(features.Select(x => (IFeature)x))
                     .GetAwaiter().GetResult();
 
