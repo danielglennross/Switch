@@ -26,10 +26,16 @@ namespace Core.Tests
             {
                 var featureActionService = scope.Resolve<IFeatureActionService>();
                 featureActionService.EnableFeature("test1feature").GetAwaiter().GetResult();
+                featureActionService.EnableFeature("test2feature").GetAwaiter().GetResult();
 
                 var testFeature = scope.Resolve<ITestFeature>();
 
                 var r = testFeature.Run();
+                var r2 = testFeature.Run();
+
+                featureActionService.EnableFeature("test3feature").GetAwaiter().GetResult();
+
+                var r3 = testFeature.Run();
 
                 testFeature.Do();
 
@@ -46,11 +52,17 @@ namespace Core.Tests
                     var rr = x.Result;
                 });
 
-                var dTask = testFeature.DoAsync();
-                dTask.ContinueWith(x =>
+                var rTask2 = testFeature.RunAsync();
+                rTask2.ContinueWith(x =>
                 {
-                    var rr = x.Status;
+                    var rr = x.Result;
                 });
+
+                //var dTask = testFeature.DoAsync();
+                //dTask.ContinueWith(x =>
+                //{
+                //    var rr = x.Status;
+                //});
 
                 Thread.Sleep(Timeout.Infinite);
             }

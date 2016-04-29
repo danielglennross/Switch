@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Autofac.Features.Indexed;
 using Castle.DynamicProxy;
 using Core.Models;
+using Core.Services.Cache;
 
 namespace Core.Services
 {
@@ -13,9 +14,11 @@ namespace Core.Services
     {
         private readonly IIndex<string, IEnumerable<IFeature>> _features;
         private readonly IFeatureActionService _featureService;
+        private readonly IInterceptCache _cache;
 
-        public SwitchBus(IIndex<string, IEnumerable<IFeature>> features, IFeatureActionService featureService)
+        public SwitchBus(IIndex<string, IEnumerable<IFeature>> features, IFeatureActionService featureService, IInterceptCache cache)
         {
+            _cache = cache;
             _featureService = featureService;
             _features = features;
         }
@@ -35,16 +38,18 @@ namespace Core.Services
                 .ToList();
 
             var interfaceType = features.First().GetType().GetInterface(interfaceName);
-            var crete = 
-                await _featureService.GetConcreteForInterface(features.Select(x => (IFeature)x))
-                    .ConfigureAwait(false);
+            var crete =
+                await _cache.Get(_cache.GetSwitchCacheKey(interfaceName),
+                    async () => await _featureService.GetConcreteForInterface(features.Select(x => (IFeature) x))
+                        .ConfigureAwait(false))
+                            .ConfigureAwait(false);
 
             var method = GetMatchingMethod(interfaceType, methodName, eventData);
 
             dynamic result = method.Invoke(crete, method.GetParameters().Select(p => eventData[p.Name]).ToArray());
 
             // use the run time type to determine which overload to use
-            return Handle(result);
+            return Handle(result ?? 0);
         }
 
         private static async Task Handle(Task task)
@@ -54,7 +59,6 @@ namespace Core.Services
 
         private static async Task<T> Handle<T>(Task<T> task)
         {
-            //await Handle((Task)task).ConfigureAwait(false);
             return await task.ConfigureAwait(false);
         }
 

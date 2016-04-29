@@ -43,11 +43,20 @@
       <HintPath>..\packages\Castle.Core.3.3.3\lib\net45\Castle.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.8.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="nunit.framework, Version=2.6.4.14350, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
       <HintPath>..\packages\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="StackExchange.Redis, Version=1.0.316.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\StackExchange.Redis.1.0.488\lib\net45\StackExchange.Redis.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -64,6 +73,11 @@
     <Compile Include="FeatureRules\IRule.cs" />
     <Compile Include="Providers\DefaultFeatureProvider.cs" />
     <Compile Include="Providers\IFeatureProvider.cs" />
+    <Compile Include="Providers\RedisFeatureProvider.cs" />
+    <Compile Include="Services\Events\CacheInvalidatorEvent.cs" />
+    <Compile Include="Services\Cache\DefaultObjectCache.cs" />
+    <Compile Include="Services\Cache\IInterceptCache.cs" />
+    <Compile Include="Services\Cache\RedisDistributedObjectCache.cs" />
     <Compile Include="Services\FeatureActionService.cs" />
     <Compile Include="Services\FeatureInfoService.cs" />
     <Compile Include="Services\IFeatureActionService.cs" />

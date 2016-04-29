@@ -11,8 +11,14 @@ using Core.Startup;
 
 namespace Core.Services
 {
+    public delegate Task OnFeatureEnabled(string featureName);
+    public delegate Task OnFeatureDisabled(string featureName);
+
     public class FeatureActionService : IFeatureActionService
     {
+        public event OnFeatureEnabled OnFeatureEnabled = delegate { return Task.CompletedTask; };
+        public event OnFeatureDisabled OnFeatureDisabled = delegate { return Task.CompletedTask; };
+
         private readonly Func<Type, IRule> _ruleFactory;
         private readonly IFeatureProvider _featureProvider;
         private readonly IFeatureManager _featureManager;
@@ -98,13 +104,17 @@ namespace Core.Services
                     .Where(x => !enabledFeatures.Contains(x))
                     .ToList();
 
-            featuresToEnable.ForEach(
-                async x => await _featureProvider.EnableFeature(x).ConfigureAwait(false));
+            var featuresToEnableTasks = featuresToEnable.Select(_featureProvider.EnableFeature);
+            await Task.WhenAll(featuresToEnableTasks).ConfigureAwait(false);
+
+            await OnFeatureEnabled(name).ConfigureAwait(false);
         }
 
         public async Task DisableFeature(string name)
         {
             await _featureProvider.DisableFeature(name).ConfigureAwait(false);
+
+            await OnFeatureDisabled(name).ConfigureAwait(false);
         }
     }
 }
