@@ -24,7 +24,7 @@ namespace Core.Providers
         {
             return
                 await
-                    Get(EnabledFeaturesKey, async () => await _decoratedFeatureProvider.GetEnabledFeatures().ConfigureAwait(false))
+                    Get(EnabledFeaturesKey, () => _decoratedFeatureProvider.GetEnabledFeatures())
                         .ConfigureAwait(false);
         }
 
@@ -32,14 +32,14 @@ namespace Core.Providers
         {
             await 
                 Delete(EnabledFeaturesKey, 
-                    async () => await _decoratedFeatureProvider.EnableFeature(feature).ConfigureAwait(false)).ConfigureAwait(false);
+                    () => _decoratedFeatureProvider.EnableFeature(feature)).ConfigureAwait(false);
         }
 
         public async Task DisableFeature(string feature)
         {
             await
                 Delete(EnabledFeaturesKey, 
-                    async () => await _decoratedFeatureProvider.DisableFeature(feature).ConfigureAwait(false)).ConfigureAwait(false);
+                    () => _decoratedFeatureProvider.DisableFeature(feature)).ConfigureAwait(false);
         }
 
         private static async Task Delete(string key, Func<Task> decoratedAction)

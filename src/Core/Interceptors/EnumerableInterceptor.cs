@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
-using Castle.Core.Internal;
 using Castle.DynamicProxy;
 using Core.Models;
 using Core.Services;
@@ -56,8 +54,8 @@ namespace Core.Interceptors
                 target[i] = features[i];
             }
 
-            var result = _cache.Get(_cache.GetEnumerableCacheKey(invocation.Method.DeclaringType.Name), async () => await
-                _featureService.FilterEnabledFeatures(features.Select(x => (IFeature) x)).ConfigureAwait(false))
+            var result = _cache.Get(_cache.GetEnumerableCacheKey(invocation.Method.DeclaringType.Name), 
+                () => _featureService.FilterEnabledFeatures(features.Select(x => (IFeature) x)))
                     .GetAwaiter().GetResult();
 
             var items = features.Intersect(result.Select(x => (T)x));

@@ -39,16 +39,15 @@ namespace Core.Services
 
             var interfaceType = features.First().GetType().GetInterface(interfaceName);
             var crete =
-                await _cache.Get(_cache.GetSwitchCacheKey(interfaceName),
-                    async () => await _featureService.GetConcreteForInterface(features.Select(x => (IFeature) x))
-                        .ConfigureAwait(false))
+                await _cache.Get(_cache.GetSwitchCacheKey(interfaceName), () =>
+                    _featureService.GetConcreteForInterface(features.Select(x => (IFeature) x)) )
                             .ConfigureAwait(false);
 
             var method = GetMatchingMethod(interfaceType, methodName, eventData);
 
             dynamic result = method.Invoke(crete, method.GetParameters().Select(p => eventData[p.Name]).ToArray());
 
-            // use the run time type to determine which overload to use
+            // dynamic dispatch - use the run time type to determine which overload to use
             return Handle(result ?? 0);
         }
 
