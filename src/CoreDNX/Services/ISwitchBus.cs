@@ -5,6 +5,6 @@ namespace CoreDNX.Services
 {
     public interface ISwitchBus
     {
-        Task<object> Notify(string messageName, IDictionary<string, object> eventData);
+        Task<T> Notify<T>(string messageName, IDictionary<string, object> eventData);
     }
 }

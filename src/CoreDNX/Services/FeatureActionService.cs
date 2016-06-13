@@ -11,8 +11,14 @@ using CoreDNX.Startup;
 
 namespace CoreDNX.Services
 {
+    public delegate Task OnFeatureEnabled(string featureName);
+    public delegate Task OnFeatureDisabled(string featureName);
+
     public class FeatureActionService : IFeatureActionService
     {
+        public event OnFeatureEnabled OnFeatureEnabled = delegate { return Task.FromResult(0); };
+        public event OnFeatureDisabled OnFeatureDisabled = delegate { return Task.FromResult(0); };
+
         private readonly Func<Type, IRule> _ruleFactory;
         private readonly IFeatureProvider _featureProvider;
         private readonly IFeatureManager _featureManager;
@@ -76,7 +82,7 @@ namespace CoreDNX.Services
                 while (true)
                 {
                     if (start == null || _ruleFactory(start.suppMeta.RuleType).Evaluate()) break;
-                    start = activeFeatures.First(x => x.feature.GetType() == start.suppMeta.Type);
+                    start = activeFeatures.FirstOrDefault(x => x.feature.GetType() == start.suppMeta.Type);
                 }
                 if (start != null) tt.Add(start.feature);
             });
@@ -98,13 +104,17 @@ namespace CoreDNX.Services
                     .Where(x => !enabledFeatures.Contains(x))
                     .ToList();
 
-            featuresToEnable.ForEach(
-                async x => await _featureProvider.EnableFeature(x).ConfigureAwait(false));
+            var featuresToEnableTasks = featuresToEnable.Select(_featureProvider.EnableFeature);
+            await Task.WhenAll(featuresToEnableTasks).ConfigureAwait(false);
+
+            await OnFeatureEnabled(name).ConfigureAwait(false);
         }
 
         public async Task DisableFeature(string name)
         {
             await _featureProvider.DisableFeature(name).ConfigureAwait(false);
+
+            await OnFeatureDisabled(name).ConfigureAwait(false);
         }
     }
 }

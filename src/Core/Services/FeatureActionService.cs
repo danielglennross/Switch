@@ -69,8 +69,8 @@ namespace Core.Services
 
             var suppressedTypes = activeFeatures
                 .Select(x => x.suppMeta.Type)
-                .Where(x => x != null).
-                ToList();
+                .Where(x => x != null)
+                .ToList();
 
             var starts = activeFeatures
                 .Where(x => !suppressedTypes.Contains(x.feature.GetType()))
@@ -82,7 +82,7 @@ namespace Core.Services
                 while (true)
                 {
                     if (start == null || _ruleFactory(start.suppMeta.RuleType).Evaluate()) break;
-                    start = activeFeatures.First(x => x.feature.GetType() == start.suppMeta.Type);
+                    start = activeFeatures.FirstOrDefault(x => x.feature.GetType() == start.suppMeta.Type);
                 }
                 if (start != null) tt.Add(start.feature);
             });

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Autofac.Features.Indexed;
 using Castle.DynamicProxy;
 using CoreDNX.Models;
+using CoreDNX.Services.Cache;
 
 namespace CoreDNX.Services
 {
@@ -13,14 +14,16 @@ namespace CoreDNX.Services
     {
         private readonly IIndex<string, IEnumerable<IFeature>> _features;
         private readonly IFeatureActionService _featureService;
+        private readonly IInterceptCache _cache;
 
-        public SwitchBus(IIndex<string, IEnumerable<IFeature>> features, IFeatureActionService featureService)
+        public SwitchBus(IIndex<string, IEnumerable<IFeature>> features, IFeatureActionService featureService, IInterceptCache cache)
         {
+            _cache = cache;
             _featureService = featureService;
             _features = features;
         }
 
-        public async Task<object> Notify(string messageName, IDictionary<string, object> eventData)
+        public async Task<T> Notify<T>(string messageName, IDictionary<string, object> eventData)
         {
             var parameters = messageName.Split('.');
             if (parameters.Length != 2)
@@ -35,17 +38,17 @@ namespace CoreDNX.Services
                 .ToList();
 
             var interfaceType = features.First().GetType().GetInterface(interfaceName);
-            var crete = 
-                await _featureService.GetConcreteForInterface(features.Select(x => (IFeature)x))
-                    .ConfigureAwait(false);
+            var crete =
+                await _cache.Get(_cache.GetSwitchCacheKey(interfaceName), () =>
+                    _featureService.GetConcreteForInterface(features.Select(x => (IFeature) x)) )
+                            .ConfigureAwait(false);
 
             var method = GetMatchingMethod(interfaceType, methodName, eventData);
 
-            dynamic result = 
-                method.Invoke(crete, method.GetParameters().Select(p => eventData[p.Name]).ToArray());
+            dynamic result = method.Invoke(crete, method.GetParameters().Select(p => eventData[p.Name]).ToArray());
 
-            // use the run time type to determine which overload to use
-            return Handle(result);
+            // dynamic dispatch - use the run time type to determine which overload to use
+            return Handle(result ?? 0);
         }
 
         private static async Task Handle(Task task)
@@ -55,7 +58,6 @@ namespace CoreDNX.Services
 
         private static async Task<T> Handle<T>(Task<T> task)
         {
-            await Handle((Task)task).ConfigureAwait(false);
             return await task.ConfigureAwait(false);
         }
 

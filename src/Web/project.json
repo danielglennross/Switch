@@ -24,12 +24,16 @@
     "Microsoft.Extensions.Logging.Console": "1.0.0-rc1-final",
     "Microsoft.Extensions.Logging.Debug": "1.0.0-rc1-final",
     "Microsoft.VisualStudio.Web.BrowserLink.Loader": "14.0.0-rc1-final",
-    "Autofac": "4.0.0-beta8",
-    "Autofac.Extensions.DependencyInjection": "4.0.0-rc1-177"
+    "Glimpse": "2.0.0-beta1",
+    "Microsoft.AspNet.Mvc.WebApiCompatShim": "6.0.0-rc1-final",
+
+    "Autofac": "4.0.0-rc1-177",
+    "Autofac.Extensions.DependencyInjection": "4.0.0-rc1-177",
+    "Autofac.Extras.DynamicProxy": "4.0.0-beta8-231"
   },
 
   "commands": {
-    "web": "Microsoft.AspNet.Server.Kestrel",
+    "web": "Microsoft.AspNet.Server.Kestrel"
   },
 
   "frameworks": {

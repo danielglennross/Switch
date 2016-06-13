@@ -9,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Web.Middleware;
+using Glimpse;
 
 namespace Web
 {
@@ -22,15 +23,6 @@ namespace Web
                 .AddJsonFile("appsettings.json")
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true);
 
-            if (env.IsDevelopment())
-            {
-                // For more details on using the user secret store see http://go.microsoft.com/fwlink/?LinkID=532709
-                //builder.AddUserSecrets();
-
-                // This will push telemetry data through Application Insights pipeline faster, allowing you to view results immediately.
-                //builder.AddApplicationInsightsSettings(developerMode: true);
-            }
-
             builder.AddEnvironmentVariables();
             Configuration = builder.Build();
         }
@@ -42,6 +34,7 @@ namespace Web
         {
             // Add framework services.
             services.AddApplicationInsightsTelemetry(Configuration);
+            services.AddGlimpse();
             services.AddMvc();
 
             var builder = new ContainerBuilder();
@@ -86,6 +79,8 @@ namespace Web
 
             app.UseStaticFiles();
 
+            app.UseGlimpse();
+
             app.UseFeatureMiddleware();
 
             // To configure external authentication please see http://go.microsoft.com/fwlink/?LinkID=532715
@@ -95,6 +90,13 @@ namespace Web
                 routes.MapRoute(
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
+
+                routes.MapRoute("spa-fallback",
+                                "{*anything}",
+                                new { controller = "Home", action = "Index" });
+
+                routes.MapWebApiRoute("defaultApi",
+                                      "api/{controller}/{id?}");
             });
         }
 

@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Autofac;
-using Autofac.Extras.DynamicProxy;
 using Autofac.Features.Indexed;
+using Autofac.Extras.DynamicProxy;
 using CoreDNX.FeatureRules;
 using CoreDNX.Interceptors;
 using CoreDNX.Models;
 using CoreDNX.Providers;
 using CoreDNX.Services;
+using CoreDNX.Services.Cache;
+using CoreDNX.Services.Events;
 using CoreDNX.Startup;
 using Module = Autofac.Module;
 
@@ -17,6 +19,8 @@ namespace CoreDNX.Autofac
 {
     public class SwitchModule : Module
     {
+        public bool UseRedisCacheProvider { get; set; }
+
         protected override void Load(ContainerBuilder builder)
         {
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
@@ -27,12 +31,37 @@ namespace CoreDNX.Autofac
             //test
             builder.RegisterType<TestFeatureManifest>().As<IFeatureManifest>();
 
+            //if (UseRedisCacheProvider)
+            //{
+            //    const string key = "featureProvider";
+            //    builder.RegisterType<DefaultFeatureProvider>().Named<IFeatureProvider>(key).SingleInstance();
+            //    builder.RegisterDecorator<RedisCacheFeatureProvider>(
+            //        (context, provider) => new RedisCacheFeatureProvider(provider), key).SingleInstance();
+            //}
+            //else
+            //{
+            //    builder.RegisterType<DefaultFeatureProvider>().As<IFeatureProvider>().SingleInstance();
+            //}
+
+            builder.RegisterType<CacheInvalidatorEvent>().As<ICacheEvents>();
+
+            builder.RegisterType<DefaultObjectCache>().As<IInterceptCache>().SingleInstance();
             builder.RegisterType<FeatureManager>().As<IFeatureManager>().SingleInstance();
             builder.RegisterType<DefaultFeatureProvider>().As<IFeatureProvider>().SingleInstance();
 
             builder.RegisterType<FeatureInfoService>().As<IFeatureInfoService>();
 
-            builder.RegisterType<FeatureActionService>().As<IFeatureActionService>();
+            builder.RegisterType<FeatureActionService>().As<IFeatureActionService>().OnActivated(act =>
+            {
+                var handlers = act.Context.Resolve<IEnumerable<ICacheEvents>>().ToList();
+                handlers.ForEach(h =>
+                {
+                    act.Instance.OnFeatureEnabled += h.OnFeatureEnabled;
+                    act.Instance.OnFeatureDisabled += h.OnFeatureDisabled;
+                });
+            });
+
+
             builder.RegisterType<SwitchBus>().As<ISwitchBus>();
 
             builder.Register<Func<Type, IRule>>(c =>

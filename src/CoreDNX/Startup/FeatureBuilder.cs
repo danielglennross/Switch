@@ -1,21 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using CoreDNX.Attributes;
 
 namespace CoreDNX.Startup
 {
     public class FeatureBuilder
     {
+        private readonly Lazy<IEnumerable<Type>> _loadedAssemblies; 
         private readonly IList<FeatureDescriptor> _features;
 
         public FeatureBuilder()
         {
             _features = new List<FeatureDescriptor>();
+            _loadedAssemblies = new Lazy<IEnumerable<Type>>(() => AppDomain.CurrentDomain.GetAssemblies().SelectMany(x => x.GetTypes()));
         }
 
-        public FeatureBuilder ForFeature(string name, Action<FeatureItem> featureFactory)
+        public FeatureBuilder ForFeature(string name, Action<FeatureItemInternal> featureFactory)
         {
-            var builder = new FeatureItem(name);
+            var builder = new FeatureItemInternal(name, _loadedAssemblies);
             featureFactory(builder);
 
             _features.Add(builder.Build());
@@ -27,40 +30,49 @@ namespace CoreDNX.Startup
             return _features ?? Enumerable.Empty<FeatureDescriptor>();
         }
 
-        public class FeatureItem
+        public class FeatureItemInternal
         {
+            private readonly List<string> _dependencies; 
+            private readonly Lazy<IEnumerable<Type>> _lazy;
             private FeatureDescriptor _featureDescriptor;
 
-            public FeatureItem(string name)
+            public FeatureItemInternal(string name, Lazy<IEnumerable<Type>> loadedAssemblies)
             {
+                _lazy = loadedAssemblies;
+                _dependencies = new List<string>();
                 _featureDescriptor = new FeatureDescriptor
                 {
                     Name = name,
-                    Dependencies = new List<string>()
                 };
             }
 
             public FeatureDescriptor Build()
             {
-                _featureDescriptor.Dependencies = _featureDescriptor.Dependencies.Distinct().ToList();
+                var exportedTypes = _lazy.Value
+                    .Where(x => x.GetCustomAttributes(typeof (FeatureAttribute), true)
+                    .Any(a => a != null && 
+                        ((FeatureAttribute)a).Name.Equals(_featureDescriptor.Name, StringComparison.OrdinalIgnoreCase)));
+
+                _featureDescriptor.ExportedTypes = exportedTypes;
+                _featureDescriptor.Dependencies = _dependencies.Distinct();
                 return _featureDescriptor;
             }
 
-            public FeatureItem WithDescription(string desc)
+            public FeatureItemInternal WithDescription(string desc)
             {
                 _featureDescriptor.Description = desc;
                 return this;
             }
 
-            public FeatureItem WithCategory(string category)
+            public FeatureItemInternal WithCategory(string category)
             {
                 _featureDescriptor.Category = category;
                 return this;
             }
 
-            public FeatureItem WithDependencies(params string[] name)
+            public FeatureItemInternal WithDependencies(params string[] name)
             {
-                _featureDescriptor.Dependencies.AddRange(name);
+                _dependencies.AddRange(name);
                 return this;
             }
         }
@@ -71,7 +83,8 @@ namespace CoreDNX.Startup
         public string Name { get; set; }
         public string Description { get; set; }
         public string Category { get; set; }
-        public List<string> Dependencies { get; set; }
+        public IEnumerable<string> Dependencies { get; set; }
+        public IEnumerable<Type> ExportedTypes { get; set; } 
     }
 
     public struct FeatureItem
